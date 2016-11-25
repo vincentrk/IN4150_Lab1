@@ -1,17 +1,22 @@
+import java.io.Serializable;
 import java.util.Comparator;
 
 /**
  * Created by vincent on 11/17/16.
  */
-public class Message implements Comparator<Message>
+enum messageType {ACK,Message}
+public class Message implements Serializable,Comparator<Message>
 {
     int time;
     int senderID;
-
-    public Message(int time, int senderID)
+    messageType Type;
+    String Msg;
+    Message(){}
+    public Message(int time, int senderID,String Msg)
     {
         this.time = time;
         this.senderID = senderID;
+        this.Msg = Msg;
     }
 
     public String toString()
@@ -34,7 +39,7 @@ public class Message implements Comparator<Message>
         }
         else
         {
-            return m1.time - m2.time;
+            return m1.time-m2.time;
         }
     }
 }

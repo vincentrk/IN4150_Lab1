@@ -1,55 +1,81 @@
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.spec.ECField;
-import java.util.ArrayDeque;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * Created by vincent on 11/17/16.
  */
-public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnable
-{
+public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnable {
     private int procID;
     private int time;
-    private PriorityQueue<Message> messageQueue;
+    private LinkedList<Message> Buffer;
 
     public TMOProc(int procID) throws RemoteException // TODO this is not ideal better to implement try catch
     {
         this.procID = procID;
         this.time = 0;
-        this.messageQueue = new PriorityQueue<Message>();
+        this.Buffer= new LinkedList<Message>();
     }
 
-    public void run()
-    {
-        System.out.println("ProcID:" + procID);
-        if (procID == 8)
-        {
-            try
-            {
-                TMOProc testProc = (TMOProc)(java.rmi.Naming.lookup("rmi://localhost:/TMOProc1"));
+    public void run() {
+        while(true) {
+            System.out.println("ProcID:" + procID);
+            try {
+                readMessage();
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                System.out.println(ex);
+                e.printStackTrace();
+            }
+            if (procID == 4) {
+                Message Msg= new Message((int)System.currentTimeMillis(),procID,"BroadcastMessage");
+                try {
+                    for(int i=0;i<10;i++){
+                        sendMessage(i, Msg);
+                    }
+                } catch (Exception ex) {
+                    System.out.println(ex);
+                }
+            }
+            try {
+                Thread.sleep(1000);
+            }
+            catch(InterruptedException e)
+            {
+                e.printStackTrace();
             }
         }
-        return;
+        //return;
     }
 
-    public void printTest()
-    {
+    public void printTest() {
         System.out.println("THIS IS THE TEST FOR PROC: " + procID);
     }
 
-    public void sendMessage(Message message)
-    {
+    public void sendMessage(int procID, Message message) {
+        try {
+            TMOInterface Rcv = (TMOInterface) Naming.lookup("rmi://localhost/TMOProc" + procID);
+            Rcv.receiveMessage(message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
     }
 
-    public void receiveMessage(Message message)
+    public void receiveMessage(Message message) {
+        this.Buffer.addLast(message);
+        Collections.sort(Buffer,new Message());
+    }
+    public void readMessage()
     {
-        messageQueue.add(message);
+        if(Buffer.isEmpty()){
+            return;
+        }
+        else {
+            Message temp= Buffer.remove();
+            System.out.println("Procces " + this.procID + "Read message " + temp.Msg );
+        }
     }
 }
