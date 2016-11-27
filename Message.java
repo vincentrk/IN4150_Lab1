@@ -7,47 +7,50 @@ import java.util.Comparator;
 enum messageType {ACK, Message, ERR}
 public class Message implements Serializable, Comparator<Message>
 {
-    int time;
-    int senderID;
-    messageType Type;
-    String msg;
+    private Timestamp timestamp;
+    private messageType type;
+    private String msg;
 
     public Message()
     {
-        this.time = 0;
-        this.senderID = -1;
-        this.Type = messageType.ERR;
+        this.timestamp = new Timestamp(-1, -1);
+        this.type = messageType.ERR;
         this.msg = "";
     }
-    public Message(int time, int senderID, messageType Type, String msg)
+    public Message(int time, int senderID, messageType type, String msg)
     {
-        this.time = time;
-        this.senderID = senderID;
-        this.Type = Type;
+        this.timestamp = new Timestamp(time, senderID);
+        this.type = type;
+        this.msg = msg;
+    }
+
+    public Message(Timestamp timestamp, messageType type, String msg)
+    {
+        this.timestamp = timestamp;
+        this.type = type;
         this.msg = msg;
     }
 
     public String toString()
     {
-        return "Message time: " + time + ", SenderID: " + senderID + ", Message Type: " + Type + ", Message: " + msg;
+        return "Message timestamp: " + timestamp + ", Message Type: " + type + ", Message: " + msg;
     }
 
     public boolean equals(Object obj)
     {
         if(!(obj instanceof Message))
             return false;
-        return ((this.time == ((Message)(obj)).time) && (this.senderID == ((Message)(obj)).senderID) && (this.Type == ((Message)(obj)).Type) && (this.msg.equals(((Message)(obj)).msg)));
+        return ((this.timestamp.equals(((Message)(obj)).timestamp)) && (this.type == ((Message)(obj)).type) && (this.msg.equals(((Message)(obj)).msg)));
     }
 
     public int compare(Message m1, Message m2)
     {
-        if(m1.time == m2.time)
-        {
-            return m1.senderID - m2.senderID;
-        }
-        else
-        {
-            return m1.time-m2.time;
-        }
+        return this.timestamp.compare(m1.timestamp, m2.timestamp);
     }
+
+    public messageType getType() {return type;}
+
+    public String getMessage() {return msg;}
+
+    public Timestamp getTimestamp() {return timestamp;}
 }

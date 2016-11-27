@@ -9,6 +9,8 @@ import java.rmi.server.UnicastRemoteObject;
  */
 public class Main
 {
+    private static final int NUM_PROCESSES = 10;
+
     public static void main(String[] args) throws RemoteException
     {
         try
@@ -16,26 +18,24 @@ public class Main
             LocateRegistry.createRegistry(1099);
             System.out.println("Created Registry");
         }
-         catch(RemoteException e)
-         {
-             System.out.println("Already Running Binding");
-         }
-         try
-         {
-            // TMOProc p = new TMOProc(1);
-
-         }
-         catch (Exception e)
-         {
-             e.printStackTrace();
-         }
-        for(int i=0;i<10;i++)
+        catch(RemoteException e)
         {
-            //TMOProc p = new TMOProc(i);
+            System.out.println("Already Running Binding");
+        }
+        try
+        {
+           // TMOProc p = new TMOProc(1, NUM_PROCESSES);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        for(int i=0;i<NUM_PROCESSES;i++)
+        {
+            //TMOProc p = new TMOProc(i, NUM_PROCESSES);
             try
             {
-
-                TMOProc p = new TMOProc(i);
+                TMOProc p = new TMOProc(i, NUM_PROCESSES);
                 Naming.rebind("rmi://localhost:1099/TMOProc"+i, p);
                 new Thread(p).start();
             }

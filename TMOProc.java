@@ -8,17 +8,18 @@ import java.util.*;
  */
 public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnable
 {
-    private static int numProcessors = 0;
+    private int numProcesses;
     private int procID;
     private int time;
     private PriorityQueue<Message> Buffer;
+    //private Dictionary<>
 
-    public TMOProc(int procID) throws RemoteException // TODO this is not ideal better to implement try catch
+    public TMOProc(int procID, int numProcesses) throws RemoteException // TODO this is not ideal better to implement try/catch
     {
         this.procID = procID;
         this.time = 0;
         this.Buffer= new PriorityQueue<Message>();
-        numProcessors++;
+        this.numProcesses = numProcesses;
     }
 
 
@@ -37,22 +38,11 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
             }
             if (procID == 4)
             {
-                Message msg= new Message(time, procID, messageType.Message, "BroadcastMessage");
-                try
-                {
-                    for(int i=0;i<numProcessors;i++)
-                    {
-                        sendMessage(i, msg);
-                    }
-                } catch (Exception ex)
-                {
-                    System.out.println(ex);
-                }
+                Message msg= new Message(new Timestamp(time, procID), messageType.Message, "BroadcastMessage");
+                broadcastMessage(msg);
             }
             waitTime(getRandTime());
         }
-        // todo figure this out a bit?
-        //numProcessors--;
         //return;
     }
 
@@ -82,7 +72,7 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
     {
         try
         {
-            for(int i=0;i<numProcessors;i++)
+            for(int i=0;i<numProcesses;i++)
             {
                 sendMessage(i, message);
             }
@@ -106,17 +96,19 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
 
     public void receiveMessage(Message message)
     {
-        if(message.Type == messageType.Message)
+        if(message.getType() == messageType.Message)
         {
             this.Buffer.add(message);
+            Message ack = new Message(new Timestamp(message.getTimestamp()), messageType.ACK, "");
+            broadcastMessage(ack);
         }
-        else if(message.Type == messageType.ACK)
+        else if(message.getType() == messageType.ACK)
         {
             // todo do something
         }
-        else if(message.Type == messageType.ERR)
+        else if(message.getType() == messageType.ERR)
         {
-            System.out.println("Message Error: " + message.msg);
+            System.out.println("Message Error: " + message.getMessage());
         }
         else
         {
@@ -133,7 +125,7 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
         else
         {
             Message temp= Buffer.remove();
-            System.out.println("Procces " + this.procID + "Read message " + temp.msg );
+            System.out.println("Procces " + this.procID + "Read message " + temp.getMessage() );
         }
     }
 }
