@@ -6,8 +6,8 @@ import java.rmi.server.UnicastRemoteObject;
  */
 public interface TMOInterface extends Remote
 {
-    public void sendMessage(int procId,Message message) throws java.rmi.RemoteException;
+    public void broadcastMessage(Message message) throws java.rmi.RemoteException;
     public void receiveMessage(Message message) throws java.rmi.RemoteException;
-    public void readMessage() throws RemoteException;
+    public void deliverMessage() throws RemoteException;
   //  public void setID(int procId) throws java.rmi.RemoteException;
 }

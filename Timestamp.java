@@ -4,7 +4,7 @@ import java.util.Comparator;
 /**
  * Created by vincent on 11/27/16.
  */
-public class Timestamp implements Serializable, Comparator<Timestamp>
+public class Timestamp implements Serializable, Comparable<Timestamp>
 {
     private int time;
     private int id;
@@ -18,7 +18,7 @@ public class Timestamp implements Serializable, Comparator<Timestamp>
     public Timestamp(Timestamp timestamp)
     {
         this.time = timestamp.time;
-        this.id = timestamp.time;
+        this.id = timestamp.id;
     }
 
     public int getTime() {return time;}
@@ -37,17 +37,22 @@ public class Timestamp implements Serializable, Comparator<Timestamp>
         return ((this.time == ((Timestamp)(obj)).time) && (this.id == ((Timestamp)(obj)).id));
     }
 
-    public int compare(Timestamp t1, Timestamp t2)
+    public int compareTo(Timestamp that)
     {
-        if(t1.time == t2.time)
+        if(this.time == that.time)
         {
-            return t1.id - t2.id;
+            return this.id - that.id;
         }
         else
         {
-            return t1.time-t2.time;
+            return this.time-that.time;
         }
     }
+
+//    public int hashCode()
+//    {
+//        return time * 1000 + id;
+//    }
 
 
 }

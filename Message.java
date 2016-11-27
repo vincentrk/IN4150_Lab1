@@ -5,7 +5,7 @@ import java.util.Comparator;
  * Created by vincent on 11/17/16.
  */
 enum messageType {ACK, Message, ERR}
-public class Message implements Serializable, Comparator<Message>
+public class Message implements Serializable, Comparable<Message>
 {
     private Timestamp timestamp;
     private messageType type;
@@ -43,9 +43,9 @@ public class Message implements Serializable, Comparator<Message>
         return ((this.timestamp.equals(((Message)(obj)).timestamp)) && (this.type == ((Message)(obj)).type) && (this.msg.equals(((Message)(obj)).msg)));
     }
 
-    public int compare(Message m1, Message m2)
+    public int compareTo(Message that)
     {
-        return this.timestamp.compare(m1.timestamp, m2.timestamp);
+        return this.timestamp.compareTo(that.timestamp);
     }
 
     public messageType getType() {return type;}

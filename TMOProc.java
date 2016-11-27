@@ -1,6 +1,5 @@
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
-import java.security.spec.ECField;
 import java.util.*;
 
 /**
@@ -11,15 +10,16 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
     private int numProcesses;
     private int procID;
     private int time;
-    private PriorityQueue<Message> Buffer;
-    //private Dictionary<>
+    private PriorityQueue<Message> buffer;
+    private TreeMap<Timestamp, Integer> acks;
 
     public TMOProc(int procID, int numProcesses) throws RemoteException // TODO this is not ideal better to implement try/catch
     {
         this.procID = procID;
         this.time = 0;
-        this.Buffer= new PriorityQueue<Message>();
+        this.buffer = new PriorityQueue<Message>();
         this.numProcesses = numProcesses;
+        acks = new TreeMap<Timestamp, Integer>();
     }
 
 
@@ -27,21 +27,14 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
     {
         while(true)
         {
-            System.out.println("ProcID:" + procID);
-            try
-            {
-                readMessage();
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-            if (procID == 4)
-            {
-                Message msg= new Message(new Timestamp(time, procID), messageType.Message, "BroadcastMessage");
-                broadcastMessage(msg);
-            }
             waitTime(getRandTime());
+            System.out.println("ProcID: " + procID + ", time " + time);
+            if(Math.random() > 0.5)
+            {
+                Message m = new Message(new Timestamp(time, procID), messageType.Message, "Broadcast from " + procID + " at local time " + time);
+                System.out.println("Proc" + procID + " broadcast message at time: " + time);
+                broadcastMessage(m);
+            }
         }
         //return;
     }
@@ -76,6 +69,7 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
             {
                 sendMessage(i, message);
             }
+            time++;
         } catch (Exception ex)
         {
             System.out.println(ex);
@@ -98,13 +92,32 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
     {
         if(message.getType() == messageType.Message)
         {
-            this.Buffer.add(message);
+            System.out.println("Proc" + procID + " receiving message from " + message.getTimestamp());
+            this.buffer.add(message);
             Message ack = new Message(new Timestamp(message.getTimestamp()), messageType.ACK, "");
+            if(!acks.containsKey(message.getTimestamp()))
+            {
+                acks.put(message.getTimestamp(), 0);
+            }
             broadcastMessage(ack);
         }
         else if(message.getType() == messageType.ACK)
         {
-            // todo do something
+            System.out.println("Proc" + procID + " receiving ACK for " + message.getTimestamp());
+            if(acks.containsKey(message.getTimestamp()))
+            {
+                acks.put(message.getTimestamp(), acks.get(message.getTimestamp()) + 1);
+            }
+            else
+            {
+                acks.put(message.getTimestamp(), 1);
+            }
+
+            if((acks.get(message.getTimestamp()) >= numProcesses) && (buffer.peek().getTimestamp().equals(message.getTimestamp())))
+            {
+                deliverMessage();
+            }
+
         }
         else if(message.getType() == messageType.ERR)
         {
@@ -116,16 +129,31 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
         }
     }
 
-    public void readMessage()
+    public void deliverMessage()
     {
-        if(Buffer.isEmpty())
+        if(buffer.isEmpty())
         {
             return;
         }
-        else
+
+
+        Message deliv = buffer.remove();
+        acks.remove(deliv.getTimestamp());
+        //System.out.println("Process " + this.procID + " Read message " + deliv.getMessage() );
+        time = Math.max(time, deliv.getTimestamp().getTime()) + 1;
+
+        System.out.println("=======================================");
+        System.out.println("PROCESS " + procID + " DELIVERED MESSAGE: " + deliv);
+        System.out.println("=======================================");
+
+        // check if deliver message again?
+        if(!buffer.isEmpty())
         {
-            Message temp= Buffer.remove();
-            System.out.println("Procces " + this.procID + "Read message " + temp.getMessage() );
+            Timestamp temp = buffer.peek().getTimestamp();
+            if((acks.containsKey(temp)) && (acks.get(temp) >= numProcesses))
+            {
+                deliverMessage();
+            }
         }
     }
 }
