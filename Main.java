@@ -11,7 +11,8 @@ public class Main
 {
     public static void main(String[] args) throws RemoteException
     {
-        try {
+        try
+        {
             LocateRegistry.createRegistry(1099);
             System.out.println("Created Registry");
         }
@@ -19,11 +20,13 @@ public class Main
          {
              System.out.println("Already Running Binding");
          }
-         try {
+         try
+         {
             // TMOProc p = new TMOProc(1);
 
          }
-         catch (Exception e) {
+         catch (Exception e)
+         {
              e.printStackTrace();
          }
         for(int i=0;i<10;i++)
@@ -40,7 +43,6 @@ public class Main
             {
                 System.out.println(ex);
             }
-
         }
     }
 }
