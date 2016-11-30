@@ -48,11 +48,4 @@ public class Timestamp implements Serializable, Comparable<Timestamp>
             return this.time-that.time;
         }
     }
-
-//    public int hashCode()
-//    {
-//        return time * 1000 + id;
-//    }
-
-
 }

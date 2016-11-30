@@ -10,10 +10,12 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
     private int numProcesses;
     private int procID;
     private int time;
+    // buffer for delivering messages
     private PriorityQueue<Message> buffer;
+    // received acknowledgements are put here until all are received and the message is at the head of the buffer
     private TreeMap<Timestamp, Integer> acks;
 
-    public TMOProc(int procID, int numProcesses) throws RemoteException // TODO this is not ideal better to implement try/catch
+    public TMOProc(int procID, int numProcesses) throws RemoteException
     {
         this.procID = procID;
         this.time = 0;
@@ -21,7 +23,6 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
         this.numProcesses = numProcesses;
         acks = new TreeMap<Timestamp, Integer>();
     }
-
 
     public void run()
     {
@@ -39,11 +40,7 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
         //return;
     }
 
-    public void printTest()
-    {
-        System.out.println("THIS IS THE TEST FOR PROC: " + procID);
-    }
-
+    // Waits the thread for specified milliseconds
     public void waitTime(int time)
     {
         try
@@ -61,6 +58,7 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
         return ((int)(Math.random() * 1000));
     }
 
+    // broadcasts a message to all processes including itself
     public void broadcastMessage(Message message)
     {
         try
@@ -70,24 +68,28 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
                 sendMessage(i, message);
             }
             time++;
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             System.out.println(ex);
         }
     }
 
+    // sends a message to a single process
     public void sendMessage(int procID, Message message)
     {
         try
         {
             TMOInterface Rcv = (TMOInterface) Naming.lookup("rmi://localhost/TMOProc" + procID);
             Rcv.receiveMessage(message);
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             e.printStackTrace();
         }
     }
 
+    // receives a message sent from another process using RMI to pass the message
     public void receiveMessage(Message message)
     {
         if(message.getType() == messageType.Message)
@@ -129,13 +131,13 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
         }
     }
 
+    // is called once all acknowledgements arrive for the message at the head of the buffer so it can be delivered
     public void deliverMessage()
     {
         if(buffer.isEmpty())
         {
             return;
         }
-
 
         Message deliv = buffer.remove();
         acks.remove(deliv.getTimestamp());
@@ -146,7 +148,7 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
         System.out.println("PROCESS " + procID + " DELIVERED MESSAGE: " + deliv);
         System.out.println("=======================================");
 
-        // check if deliver message again?
+        // check if able to deliver a second message
         if(!buffer.isEmpty())
         {
             Timestamp temp = buffer.peek().getTimestamp();

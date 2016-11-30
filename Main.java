@@ -13,6 +13,7 @@ public class Main
 
     public static void main(String[] args) throws RemoteException
     {
+        // start RMI registry
         try
         {
             LocateRegistry.createRegistry(1099);
@@ -22,7 +23,7 @@ public class Main
         {
             System.out.println("Already Running Binding");
         }
-
+        // create, bind, and start all processes
         for(int i=0;i<NUM_PROCESSES;i++)
         {
             TMOProc p = new TMOProc(i, NUM_PROCESSES);
