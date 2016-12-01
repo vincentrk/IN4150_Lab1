@@ -21,8 +21,8 @@ public class Main
             System.out.println("Incorrect Arguments. Usage: procId, numProcesses, numIterations");
             return;
         }
-        NUM_PROCESSES = Integer.parseInt(args[0]);
-        procId = Integer.parseInt(args[1]);
+        procId = Integer.parseInt(args[0]);
+        NUM_PROCESSES = Integer.parseInt(args[1]);
         numIterations = Integer.parseInt(args[2]);
 
         // start RMI registry
