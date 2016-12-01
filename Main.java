@@ -41,7 +41,7 @@ public class Main
         try
         {
             Naming.rebind("rmi://localhost:1099/TMOProc"+procId, p);
-            new Thread(p).start();
+            p.run();
         }
         catch (Exception ex)
         {
