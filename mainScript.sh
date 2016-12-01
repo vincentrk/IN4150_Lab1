@@ -10,3 +10,5 @@ for ((i=0;i<numOfProcces;i++));
 do
 	java Main $i $numOfProcces $numOfIterations &
 done
+read -p "Press Any Key to Exit"
+kill $(ps aux | grep '[j]ava Main' | awk '{print $2}')
