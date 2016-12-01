@@ -10,23 +10,25 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
     private int numProcesses;
     private int procID;
     private int time;
+    private int numIterations;
     // buffer for delivering messages
     private PriorityQueue<Message> buffer;
     // received acknowledgements are put here until all are received and the message is at the head of the buffer
     private TreeMap<Timestamp, Integer> acks;
 
-    public TMOProc(int procID, int numProcesses) throws RemoteException
+    public TMOProc(int procID, int numProcesses, int numIterations) throws RemoteException
     {
         this.procID = procID;
         this.time = 0;
         this.buffer = new PriorityQueue<Message>();
         this.numProcesses = numProcesses;
+        this.numIterations = numIterations;
         acks = new TreeMap<Timestamp, Integer>();
     }
 
     public void run()
     {
-        while(true)
+        for(int i=0; i<numIterations; i++)
         {
             waitTime(getRandTime());
             System.out.println("ProcID: " + procID + ", time " + time);
@@ -37,7 +39,8 @@ public class TMOProc extends UnicastRemoteObject implements TMOInterface, Runnab
                 broadcastMessage(m);
             }
         }
-        //return;
+        System.out.println("Proc" + procID + " completed at time " + time);
+        return;
     }
 
     // Waits the thread for specified milliseconds

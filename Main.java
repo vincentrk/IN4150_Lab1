@@ -1,3 +1,4 @@
+import java.net.Inet4Address;
 import java.net.MalformedURLException;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
@@ -9,10 +10,21 @@ import java.rmi.server.UnicastRemoteObject;
  */
 public class Main
 {
-    private static final int NUM_PROCESSES = 2;
+    private static int NUM_PROCESSES;
+    private static int procId;
+    private static int numIterations;
 
     public static void main(String[] args) throws RemoteException
     {
+        if(args.length != 3)
+        {
+            System.out.println("Incorrect Arguments. Usage: procId, numProcesses, numIterations");
+            return;
+        }
+        NUM_PROCESSES = Integer.parseInt(args[0]);
+        procId = Integer.parseInt(args[1]);
+        numIterations = Integer.parseInt(args[2]);
+
         // start RMI registry
         try
         {
@@ -23,19 +35,17 @@ public class Main
         {
             System.out.println("Already Running Binding");
         }
-        // create, bind, and start all processes
-        for(int i=0;i<NUM_PROCESSES;i++)
+        // create, bind, and start process
+
+        TMOProc p = new TMOProc(procId, NUM_PROCESSES, numIterations);
+        try
         {
-            TMOProc p = new TMOProc(i, NUM_PROCESSES);
-            try
-            {
-                Naming.rebind("rmi://localhost:1099/TMOProc"+i, p);
-                new Thread(p).start();
-            }
-            catch (Exception ex)
-            {
-                System.out.println(ex);
-            }
+            Naming.rebind("rmi://localhost:1099/TMOProc"+procId, p);
+            new Thread(p).start();
+        }
+        catch (Exception ex)
+        {
+            System.out.println(ex);
         }
     }
 }
